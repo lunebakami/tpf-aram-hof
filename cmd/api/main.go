@@ -1,18 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
+	"tpf-aram-hof/cmd/server"
 )
 
 func main() {
+  server := server.NewServer()
 
-  port := ":8080"
-
-  fmt.Printf("Server running in http://localhost%s\n", port)
-
-  if err := http.ListenAndServe(port, nil); err != nil {
+  if err := server.ListenAndServe(); err != nil {
     log.Fatal(err)
   }
 }

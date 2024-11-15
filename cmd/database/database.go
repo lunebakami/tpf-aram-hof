@@ -21,8 +21,8 @@ type service struct {
 }
 
 var (
-	dbUrl      = os.Getenv("BLUEPRINT_DB_URL")
-	authToken  = os.Getenv("BLUEPRINT_DB_AUTH_TOKEN")
+	dbUrl      = os.Getenv("DATABASE_URL")
+	authToken  = os.Getenv("DATABASE_AUTH_TOKEN")
 	dbInstance *service
 )
 
@@ -40,6 +40,8 @@ func New() Service {
 	dbInstance = &service{
 		db: db,
 	}
+
+  dbInstance.Migrate()
 	return dbInstance
 }
 
