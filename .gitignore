@@ -1,5 +1,6 @@
 .env
 tmp/
+output.css
 main
 
 # Binaries for programs and plugins
