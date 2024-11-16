@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
@@ -14,10 +15,24 @@ type Service interface {
 	Health() error
 	Migrate() error
 	Close() error
+
+	CreatePlayer(Player) (sql.Result, error)
+  GetPlayers() ([]Player, error)
+  DeletePlayer(int) (sql.Result, error)
 }
 
 type service struct {
 	db *sql.DB
+}
+
+type Player struct {
+	ID          int       `json:"id"`
+	Nickname    string    `json:"nickname"`
+	Champion    string    `json:"champion"`
+	Description string    `json:"description"`
+	GameMode    string    `json:"game_mode"`
+	Frag        string    `json:"frag"`
+	Date        time.Time `json:"date"`
 }
 
 var (
@@ -35,14 +50,75 @@ func New() Service {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
 	dbInstance = &service{
 		db: db,
 	}
 
-  dbInstance.Migrate()
+  err = dbInstance.Migrate()
+  if err != nil {
+    log.Fatalf("Error migrating database: %e", err)
+  }
 	return dbInstance
+}
+
+func (s *service) CreatePlayer(p Player) (sql.Result, error) {
+	nickname := p.Nickname
+	champion := p.Champion
+	description := p.Description
+	gameMode := p.GameMode
+	frag := p.Frag
+	date := p.Date
+
+	result, err := s.db.Exec(`
+    INSERT INTO players (nickname, champion, description, game_mode, frag, date)
+    VALUES (?, ?, ?, ?, ?, ?)
+    `,
+		nickname, champion, description, gameMode, frag, date)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (s *service) GetPlayers() ([]Player, error) {
+  rows, err := s.db.Query(`
+    SELECT id, nickname, champion, description, game_mode, frag, date
+    FROM players
+  `)
+  if err != nil {
+    return nil, err
+  }
+  defer rows.Close()
+
+  players := []Player{}
+
+  for rows.Next() {
+    var p Player
+    err := rows.Scan(&p.ID, &p.Nickname, &p.Champion, &p.Description, &p.GameMode, &p.Frag, &p.Date)
+    if err != nil {
+      log.Printf("Error scanning player: %e\n", err)
+      continue
+    }
+
+    players = append(players, p)
+  }
+
+  return players, nil
+}
+
+func (s *service) DeletePlayer(id int) (sql.Result, error) {
+  result, err := s.db.Exec(`
+    DELETE FROM players
+    WHERE id = ?
+  `, id)
+  if err != nil {
+    return nil, err
+  }
+
+  return result, nil
 }
 
 func (s *service) Health() error {
@@ -85,6 +161,16 @@ func (s *service) Migrate() error {
           frag TEXT NOT NULL,
           date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`,
+		},
+		{
+			name: "add description and game mode to players",
+			stmt: `
+        ALTER TABLE players
+        ADD COLUMN description TEXT;
+
+        ALTER TABLE players
+        ADD COLUMN game_mode TEXT;
+      `,
 		},
 	}
 

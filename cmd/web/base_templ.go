@@ -29,7 +29,7 @@ func Base() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\" class=\"h-screen\"><head><meta charset=\"utf-8\"><title>Hall da Fama - TPF ARAM</title><link href=\"/assets/css/output.css\" rel=\"stylesheet\"><script src=\"/assets/js/htmx.min.js\"></script><script src=\"/assets/js/hyperscript.min.js\"></script></head><body class=\"bg-slate-950 text-white\"><main class=\"max-w-6xl mx-auto p-4\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\" class=\"h-screen\"><head><meta charset=\"utf-8\"><title>Hall da Fama - TPF ARAM</title><link href=\"/assets/css/output.css\" rel=\"stylesheet\"><script src=\"/assets/js/htmx.min.js\"></script><script src=\"/assets/js/hyperscript.min.js\"></script></head><body class=\"bg-slate-950 text-white\"><main class=\"max-w-7xl mx-auto p-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

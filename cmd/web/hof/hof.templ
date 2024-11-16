@@ -1,26 +1,16 @@
 package hof
-
+ 
 import (
 	"fmt"
-	"time"
+	"tpf-aram-hof/cmd/database"
 	"tpf-aram-hof/cmd/web"
 )
-
-type Player struct {
-	ID          int       `json:"id"`
-	Nickname    string    `json:"nickname"`
-	Champion    string    `json:"champion"`
-	Description string    `json:"description"`
-	GameMode    string    `json:"game_mode"`
-	Frag        string    `json:"frag"`
-	Date        time.Time `json:"date"`
-}
 
 templ HofBase() {
 	@web.Base() {
 		<h1 class="text-4xl">Hall da Fama</h1>
-		<div class="flex flex-row w-full mx-auto mt-8 justify-between">
-			<div hx-get="/hof/players" hx-target="this" hx-trigger="load"></div>
+		<div id="hof-container" class="flex flex-row w-full mx-auto mt-8 justify-between">
+			<div id="hof-list-container" hx-get="/hof/players" hx-target="this" hx-trigger="load"></div>
 			<div>
 				@HofForm()
 			</div>
@@ -29,16 +19,36 @@ templ HofBase() {
 }
 
 templ HofForm() {
-	<h1>Adicionar Player para o Hall da Fama </h1>
-	<form hx-post="/hof/player" method="POST" hx-target="#hof-container">
-		<input class="bg-gray-200 text-black p-2 border-none rounded-sm" id="name" name="name" type="text"/>
+	<h2 class="text-xl">Adicionar Player para o Hall da Fama </h2>
+	<form class="flex flex-col" hx-post="/hof/player" method="POST" hx-target="#hof-message">
+		<label for="nickname">Nickname</label>
+		<input class="mb-4 bg-gray-200 text-black p-2 border-none rounded-sm" id="nickname" name="nickname" type="text"/>
+		<label for="champion">Campeão</label>
+		<input class="mb-4 bg-gray-200 text-black p-2 border-none rounded-sm" id="champion" name="champion" type="text"/>
+		<label for="description">Descrição</label>
+		<input class="mb-4 bg-gray-200 text-black p-2 border-none rounded-sm" id="description" name="description" type="text"/>
+		<label for="game_mode">Modo de Jogo</label>
+		<input class="mb-4 bg-gray-200 text-black p-2 border-none rounded-sm" id="game_mode" name="game_mode" type="text"/>
+		<label for="frag">Frag</label>
+		<input class="mb-4 bg-gray-200 text-black p-2 border-none rounded-sm" id="frag" name="frag" type="text"/>
+		<label for="date">Data</label>
+		<input class="mb-4 bg-gray-200 text-black p-2 border-none rounded-sm" id="date" name="date" type="date"/>
 		<button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white py-2 px-4 rounded-sm">Submit</button>
 	</form>
-	<div id="hof-container" class="p-4 m-4"></div>
+	<div id="hof-message" class="p-4 m-4"></div>
 }
 
 templ HofSuccessMessage(playerName string) {
-	<div _="on click remove me" id="alert-3" class="flex cursor-pointer items-center p-4 mb-4 text-green-800 rounded-sm bg-green-50 dark:bg-gray-800 dark:text-green-400" role="alert">
+	<div
+		_="on click remove me"
+		hx-on="load"
+		hx-trigger="load"
+		hx-get="/hof/players"
+		hx-target="#hof-list-container"
+		id="alert-3"
+		class="flex cursor-pointer items-center p-4 mb-4 text-green-800 rounded-sm bg-green-50 dark:bg-gray-800 dark:text-green-400"
+		role="alert"
+	>
 		<div class="ms-3 text-sm font-medium">
 			{ playerName } was added!
 		</div>
@@ -51,8 +61,8 @@ templ HofSuccessMessage(playerName string) {
 	</div>
 }
 
-templ HofList(players []Player) {
-	<div class="relative overflow-x-auto rounded-sm">
+templ HofList(players []database.Player) {
+	<div id="hof-list" class="relative overflow-x-auto rounded-sm">
 		<table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
 			<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
 				<tr>
@@ -65,18 +75,21 @@ templ HofList(players []Player) {
 					<th scope="col" class="px-6 py-3">
 						Campeão
 					</th>
-          <th scope="col" class="px-6 py-3">
-            Descrição
-          </th>
-          <th scope="col" class="px-6 py-3">
-            Modo de Jogo
-          </th>
+					<th scope="col" class="px-6 py-3">
+						Descrição
+					</th>
+					<th scope="col" class="px-6 py-3">
+						Modo de Jogo
+					</th>
 					<th scope="col" class="px-6 py-3">
 						Frag
 					</th>
 					<th scope="col" class="px-6 py-3">
 						Data
 					</th>
+          <th scope="col" class="px-6 py-3">
+            Ações
+          </th>
 				</tr>
 			</thead>
 			<tbody>
@@ -91,18 +104,27 @@ templ HofList(players []Player) {
 						<td class="px-6 py-4">
 							{ player.Champion }
 						</td>
-            <td class="px-6 py-4">
-              { player.Description }
-            </td>
-            <td class="px-6 py-4">
-              { player.GameMode }
-            </td>
+						<td class="px-6 py-4">
+							{ player.Description }
+						</td>
+						<td class="px-6 py-4">
+							{ player.GameMode }
+						</td>
 						<td class="px-6 py-4">
 							{ player.Frag }
 						</td>
 						<td class="px-6 py-4">
 							{ player.Date.Format("02/01/2006") }
 						</td>
+            <td class="px-6 py-4">
+              <button
+                hx-on="click"
+                hx-delete={"/hof/player/delete?playerId=" + fmt.Sprint(player.ID)}
+                class="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded-sm"
+              >
+                Delete
+              </button>
+            </td>
 					</tr>
 				}
 			</tbody>
