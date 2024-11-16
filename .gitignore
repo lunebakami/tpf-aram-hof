@@ -1,5 +1,6 @@
 .env
 tmp/
+main
 
 # Binaries for programs and plugins
 *.exe
